@@ -58,7 +58,7 @@ int main()
 	vector<Action> top_10_v;
 	top_10_v.reserve(val * .1);
 	for (unsigned int i = 0; i < val * .1; ++i)
-		top_10_v.emplace_back(vec_test[i]);
+		top_10_v.push_back(vec_test[i]);
 
 	chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
 	cout << "Vector time: " << chrono::duration_cast<chrono::duration<double>>(t2 - t1).count() << " seconds" << endl;
