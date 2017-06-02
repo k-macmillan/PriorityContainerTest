@@ -49,16 +49,31 @@ int main()
 
 	/////////////////// VECTOR ///////////////////
 	chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
+	
+	// Immediately Invoked Function Expression - slower in this case
+	// vector<Action> vec_test;
+	// vec_test.reserve(val);
+	// for (int i = 0; i < val; ++i)
+	// {
+		// vec_test.emplace_back([val]()
+		// {
+			// return RAND;
+		// }());
+	// }
+	
 	vector<Action> vec_test;
 	vec_test.reserve(val);
 	for (unsigned int i = 0; i < val; ++i)
 		vec_test.emplace_back(RAND);
 	sort(vec_test.begin(), vec_test.end(), VecSort);
 
-	vector<Action> top_10_v;
-	top_10_v.reserve(val * .1);
-	for (unsigned int i = 0; i < val * .1; ++i)
-		top_10_v.push_back(vec_test[i]);
+	// Vector has a range constructor!
+	vector<Action> top_10_v(vec_test.begin(), vec_test.begin() + (val * .1));
+
+	// vector<Action> top_10_v;
+	// top_10_v.reserve(val * .1);
+	// for (unsigned int i = 0; i < val * .1; ++i)
+		// top_10_v.push_back(vec_test[i]);
 
 	chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
 	cout << "Vector time: " << chrono::duration_cast<chrono::duration<double>>(t2 - t1).count() << " seconds" << endl;
