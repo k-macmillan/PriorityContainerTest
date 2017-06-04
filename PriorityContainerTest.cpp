@@ -1,9 +1,14 @@
+#pragma GCC optimize("-O3")
+#pragma GCC optimize("inline")
+#pragma GCC optimize("omit-frame-pointer")
+#pragma GCC optimize("unroll-loops")
+
 /*
 	Simple test to see how containers perform for the application I am working on. 
 	Not an all-encompasing test, but a simple demonstration. 
 */
 
-#pragma GCC optimize("-O3")
+
 
 #include <random>
 #include <iostream>
@@ -17,13 +22,15 @@ using namespace std;
 
 #define RAND rand() % INT_MAX / (rand() % INT_MAX + 0.0)
 
-struct Action
+class Action
 {
+public:
 	Action() {}
 	Action(float Fitness) : fitness(Fitness) {}
 	// Other structs
 	float fitness;
 };
+
 
 inline bool operator< (const Action& lhs, const Action& rhs) { return lhs.fitness < rhs.fitness; };
 bool VecSort(const Action& lhs, const Action& rhs) {return lhs.fitness > rhs.fitness; };
@@ -55,33 +62,31 @@ int main()
 	// vec_test.reserve(val);
 	// for (int i = 0; i < val; ++i)
 	// {
-		// vec_test.emplace_back([val]()
-		// {
-			// return RAND;
-		// }());
+	// 	vec_test.push_back([val]()
+	// 	{
+	// 		return RAND;
+	// 	}());
 	// }
-	
+
 	vector<Action> vec_test;
 	vec_test.reserve(val);
 	for (unsigned int i = 0; i < val; ++i)
 		vec_test.emplace_back(RAND);
 	sort(vec_test.begin(), vec_test.end(), VecSort);
 
-	// Vector has a range constructor!
-	vector<Action> top_10_v(vec_test.begin(), vec_test.begin() + (val * .1));
-
-	// vector<Action> top_10_v;
-	// top_10_v.reserve(val * .1);
-	// for (unsigned int i = 0; i < val * .1; ++i)
-		// top_10_v.push_back(vec_test[i]);
+	vector<Action> top_10_v;
+	top_10_v.reserve(val*.1);
+	for (unsigned int i = 0; i < val*.1; ++i)
+		top_10_v.push_back(vec_test[i]);
 
 	chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
 	cout << "Vector time: " << chrono::duration_cast<chrono::duration<double>>(t2 - t1).count() << " seconds" << endl;
 
-	// for (unsigned int i = 0; i < 5; ++i)
-	// 	cout << vec_test[i].fitness << endl;
-	// cout << endl;
-
+#ifdef OUTPUT
+	for (unsigned int i = 0; i < min(10, int(val*.1)); ++i)
+		cout << top_10_v[i].fitness << endl;
+	cout << endl;
+#endif
 	srand(42);
 
 
@@ -103,15 +108,18 @@ int main()
 
 	chrono::high_resolution_clock::time_point t6 = chrono::high_resolution_clock::now();
 	cout << "Priority Queue time: " << chrono::duration_cast<chrono::duration<double>>(t6 - t5).count() << " seconds" << endl;
-	// vector<Action> test_vec2;
-	// test_vec2.reserve(5);
-	// for (unsigned int i = 0; i < 5; ++i)
-	// {
-	// 	test_vec2.emplace_back(top_10_p.top());
-	// 	cout << test_vec2[i].fitness << endl;
-	// 	top_10_p.pop();		
-	// }
-	// cout << endl;
+
+#ifdef OUTPUT
+	vector<Action> test_vec2;
+	test_vec2.reserve(min(10, int(val*.1)));
+	for (unsigned int i = 0; i < min(10, int(val*.1)); ++i)
+	{
+		test_vec2.emplace_back(top_10_p.top());
+		cout << test_vec2[i].fitness << endl;
+		top_10_p.pop();		
+	}
+	cout << endl;
+#endif
 
 	srand(42);
 
@@ -122,13 +130,11 @@ int main()
 	reservable_priority_queue<Action> rp_queue;
 	rp_queue.reserve(val);
 
-	// priority_queue<Action> p_queue;
 	for (unsigned int i = 0; i < val; ++i)
 		rp_queue.emplace(RAND);
 
 	reservable_priority_queue<Action> top_10_rp;
 	top_10_rp.reserve(val * .1);
-	// priority_queue<Action> top_10_p;
 
 	for (unsigned int i = 0; i < val * .1; ++i)
 	{
@@ -138,16 +144,18 @@ int main()
 
 	chrono::high_resolution_clock::time_point t4 = chrono::high_resolution_clock::now();
 	cout << "Reserve Priority Queue time: " << chrono::duration_cast<chrono::duration<double>>(t4 - t3).count() << " seconds" << endl;
-	// vector<Action> test_vec2;
-	// test_vec2.reserve(5);
-	// for (unsigned int i = 0; i < 5; ++i)
-	// {
-	// 	test_vec2.emplace_back(top_10_rp.top());
-	// 	cout << test_vec2[i].fitness << endl;
-	// 	top_10_rp.pop();		
-	// }
-	// cout << endl;
 
+#ifdef OUTPUT
+	vector<Action> rp_test_vec2;
+	rp_test_vec2.reserve(min(10, int(val*.1)));
+	for (unsigned int i = 0; i < min(10, int(val*.1)); ++i)
+	{
+		rp_test_vec2.emplace_back(top_10_rp.top());
+		cout << rp_test_vec2[i].fitness << endl;
+		top_10_rp.pop();		
+	}
+	cout << endl;
+#endif
 	srand(42);
 
 
@@ -156,27 +164,36 @@ int main()
 
 	vector<Action> heap_vec;
 	heap_vec.reserve(val);
-	make_heap(heap_vec.begin(), heap_vec.end(), VecSort);
+	make_heap(heap_vec.begin(), heap_vec.end());
 	for (unsigned int i = 0; i < val; ++i)
 	{
-		heap_vec.emplace_back(RAND);
+		heap_vec.push_back(RAND);
 		push_heap(heap_vec.begin(), heap_vec.end());
 	}
 
 	vector<Action> top_10_h;
-	top_10_h.reserve(val * .1);
-	for (unsigned int i = 0; i < val * .1; ++i)
+	top_10_h.reserve(val*.1);
+	make_heap(heap_vec.begin(), heap_vec.end());
+	for (unsigned int i = 0; i < val*.1; ++i)
 	{
 		top_10_h.push_back(heap_vec.front());
-		pop_heap(heap_vec.begin(), heap_vec.end());
+		push_heap(top_10_h.begin(), top_10_h.end());
+		pop_heap(heap_vec.begin(), heap_vec.end());		
 		heap_vec.pop_back();
+		
 	}
 
 	chrono::high_resolution_clock::time_point t8 = chrono::high_resolution_clock::now();
 	cout << "Heap time: " << chrono::duration_cast<chrono::duration<double>>(t8 - t7).count() << " seconds" << endl;
-	// for (unsigned int i = 0; i < 5; ++i)
-	// 	cout << top_10_h[i].fitness << endl;
 
+#ifdef OUTPUT
+	for (unsigned int i = 0; i < min(10, int(val*.1)); ++i)
+	{
+		cout << top_10_h.front().fitness << endl;
+		pop_heap(top_10_h.begin(), top_10_h.end());
+		top_10_h.pop_back();
+	}
+#endif
 
 
 
